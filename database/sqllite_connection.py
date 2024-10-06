@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -5,16 +6,26 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 DATABASE_NAME = "Innovation.db"
 DATABASE_URL = f"sqlite+aiosqlite:///{DATABASE_NAME}"
 
-engine = create_async_engine(DATABASE_URL, connect_args={"check_same_thread": False}, echo=True)
+engine = create_async_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}, echo=True
+)
 
 SessionLocal = sessionmaker(
-    bind=engine, class_=AsyncSession, autocommit=False, autoflush=False, expire_on_commit=False
+    bind=engine,
+    class_=AsyncSession,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False,
 )
 
 Base = declarative_base()
 
 
-class SQLiteConnection():
+class SQLiteConnection:
+    """
+    Class to connect with Sqllite Database
+    """
+
     _instance = None
 
     def __new__(cls):
@@ -30,7 +41,7 @@ class SQLiteConnection():
                 print("Creating tables...")
                 await conn.run_sync(Base.metadata.create_all)
                 print("Tables created successfully!")
-            except Exception as e:
+            except HTTPException as e:
                 print(f"Error creating tables: {e}")
 
     def get_session(self) -> AsyncSession:
